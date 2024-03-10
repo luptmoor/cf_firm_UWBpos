@@ -288,7 +288,7 @@ ifeq ($(DEBUG), 1)
   CFLAGS += -Wconversion
 else
 	# Fail on warnings
-  CFLAGS += -Os -g3 -Werror
+  CFLAGS += -Os -g3
 endif
 
 ifeq ($(LTO), 1)

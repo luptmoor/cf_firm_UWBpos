@@ -189,10 +189,10 @@ static bool isBarometerPresent = false;
 static uint8_t baroMeasDelayMin = SENSORS_DELAY_BARO;
 
 // Pre-calculated values for accelerometer alignment
-float cosPitch;
-float sinPitch;
-float cosRoll;
-float sinRoll;
+float cosPitch_spi;
+float sinPitch_spi;
+float cosRoll_spi;
+float sinRoll_spi;
 
 #ifdef GYRO_GYRO_BIAS_LIGHT_WEIGHT
 static bool processGyroBiasNoBuffer(int16_t gx, int16_t gy, int16_t gz, Axis3f *gyroBiasOut);
@@ -779,10 +779,11 @@ static void sensorsDeviceInit(void)
     lpf2pInit(&accLpf[i],  1000, ACCEL_LPF_CUTOFF_FREQ);
   }
 
-  cosPitch = cosf(configblockGetCalibPitch() * (float) M_PI / 180);
-  sinPitch = sinf(configblockGetCalibPitch() * (float) M_PI / 180);
-  cosRoll = cosf(configblockGetCalibRoll() * (float) M_PI / 180);
-  sinRoll = sinf(configblockGetCalibRoll() * (float) M_PI / 180);
+  cosPitch_spi
+ = cosf(configblockGetCalibPitch() * (float) M_PI / 180);
+  sinPitch_spi = sinf(configblockGetCalibPitch() * (float) M_PI / 180);
+  cosRoll_spi = cosf(configblockGetCalibRoll() * (float) M_PI / 180);
+  sinRoll_spi = sinf(configblockGetCalibRoll() * (float) M_PI / 180);
 
   isInit = true;
 }
@@ -1067,13 +1068,15 @@ static void sensorsAccAlignToGravity(Axis3f* in, Axis3f* out)
 
   // Rotate around x-axis
   rx.x = in->x;
-  rx.y = in->y * cosRoll - in->z * sinRoll;
-  rx.z = in->y * sinRoll + in->z * cosRoll;
+  rx.y = in->y * cosRoll_spi - in->z * sinRoll_spi;
+  rx.z = in->y * sinRoll_spi + in->z * cosRoll_spi;
 
   // Rotate around y-axis
-  ry.x = rx.x * cosPitch - rx.z * sinPitch;
+  ry.x = rx.x * cosPitch_spi
+ - rx.z * sinPitch_spi;
   ry.y = rx.y;
-  ry.z = -rx.x * sinPitch + rx.z * cosPitch;
+  ry.z = -rx.x * sinPitch_spi + rx.z * cosPitch_spi
+;
 
   out->x = ry.x;
   out->y = ry.y;

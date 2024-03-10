@@ -140,10 +140,10 @@ static bool isAK8963TestPassed = false;
 static bool isLPS25HTestPassed = false;
 
 // Pre-calculated values for accelerometer alignment
-float cosPitch;
-float sinPitch;
-float cosRoll;
-float sinRoll;
+float cosPitch_mpu;
+float sinPitch_mpu;
+float cosRoll_mpu;
+float sinRoll_mpu;
 
 // This buffer needs to hold data from all sensors
 static uint8_t buffer[SENSORS_MPU6500_BUFF_LEN + SENSORS_MAG_BUFF_LEN + SENSORS_BARO_BUFF_LEN] = {0};
@@ -409,10 +409,10 @@ static void sensorsDeviceInit(void)
   }
 #endif
 
-  cosPitch = cosf(configblockGetCalibPitch() * (float) M_PI/180);
-  sinPitch = sinf(configblockGetCalibPitch() * (float) M_PI/180);
-  cosRoll = cosf(configblockGetCalibRoll() * (float) M_PI/180);
-  sinRoll = sinf(configblockGetCalibRoll() * (float) M_PI/180);
+  cosPitch_mpu = cosf(configblockGetCalibPitch() * (float) M_PI/180);
+  sinPitch_mpu = sinf(configblockGetCalibPitch() * (float) M_PI/180);
+  cosRoll_mpu = cosf(configblockGetCalibRoll() * (float) M_PI/180);
+  sinRoll_mpu = sinf(configblockGetCalibRoll() * (float) M_PI/180);
 }
 
 
@@ -859,13 +859,13 @@ static void sensorsAccAlignToGravity(Axis3f* in, Axis3f* out)
 
   // Rotate around x-axis
   rx.x = in->x;
-  rx.y = in->y * cosRoll - in->z * sinRoll;
-  rx.z = in->y * sinRoll + in->z * cosRoll;
+  rx.y = in->y * cosRoll_mpu - in->z * sinRoll_mpu;
+  rx.z = in->y * sinRoll_mpu + in->z * cosRoll_mpu;
 
   // Rotate around y-axis
-  ry.x = rx.x * cosPitch - rx.z * sinPitch;
+  ry.x = rx.x * cosPitch_mpu - rx.z * sinPitch_mpu;
   ry.y = rx.y;
-  ry.z = -rx.x * sinPitch + rx.z * cosPitch;
+  ry.z = -rx.x * sinPitch_mpu + rx.z * cosPitch_mpu;
 
   out->x = ry.x;
   out->y = ry.y;
